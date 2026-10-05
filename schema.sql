@@ -1,0 +1,57 @@
+CREATE DATABASE IF NOT EXISTS ai_agent_audit
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE ai_agent_audit;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS agents (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(160) NOT NULL,
+  endpoint VARCHAR(500) NOT NULL,
+  type VARCHAR(80) NOT NULL DEFAULT 'AI Agent',
+  status VARCHAR(40) NOT NULL DEFAULT 'Ready',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_agents_user (user_id),
+  CONSTRAINT fk_agents_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS audits (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  agent_id BIGINT UNSIGNED NOT NULL,
+  agent_name VARCHAR(160) NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'queued',
+  progress INT NOT NULL DEFAULT 0,
+  score INT NULL,
+  started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP NULL,
+  PRIMARY KEY (id),
+  INDEX idx_audits_user (user_id),
+  INDEX idx_audits_agent (agent_id),
+  CONSTRAINT fk_audits_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_audits_agent FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS audit_findings (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  audit_id BIGINT UNSIGNED NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  severity VARCHAR(30) NOT NULL,
+  status VARCHAR(30) NOT NULL,
+  detail TEXT NOT NULL,
+  PRIMARY KEY (id),
+  INDEX idx_findings_audit (audit_id),
+  CONSTRAINT fk_findings_audit FOREIGN KEY (audit_id) REFERENCES audits(id) ON DELETE CASCADE
+);
