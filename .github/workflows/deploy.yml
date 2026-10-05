@@ -24,17 +24,15 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: client
         run: npm install
 
       - name: Build React app
-        working-directory: client
         run: npm run build
 
       - name: Upload build
         uses: actions/upload-pages-artifact@v3
         with:
-          path: client/dist
+          path: dist
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
